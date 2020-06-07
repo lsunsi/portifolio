@@ -1,0 +1,14 @@
+version: '3'
+services:
+  server:
+    build: .
+    depends_on:
+      - database
+    ports:
+      - '8000:8000'
+    environment:
+      DATABASE_URL: 'postgres://postgres:portifolio@database/postgres'
+  database:
+    image: 'postgres:12.3'
+    environment:
+      POSTGRES_PASSWORD: portifolio

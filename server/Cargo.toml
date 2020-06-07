@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["lsunsi"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+actix-web = "2.0.0"
+actix-rt = "1.1.1"
+
+[dependencies.diesel]
+version = "1.4.4"
+features = ["postgres", "r2d2"]
