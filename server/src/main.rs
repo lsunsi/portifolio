@@ -1,3 +1,5 @@
+mod schema;
+
 use actix_web::web::Data;
 use actix_web::{get, App, HttpServer};
 use diesel::prelude::PgConnection;
