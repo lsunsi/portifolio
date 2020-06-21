@@ -7,7 +7,13 @@ edition = "2018"
 [dependencies]
 actix-web = "2.0.0"
 actix-rt = "1.1.1"
+serde = "1.0.113"
+bigdecimal = "0.0.15"
 
 [dependencies.diesel]
-version = "1.4.4"
-features = ["postgres", "r2d2"]
+version = "1.4.5"
+features = ["postgres", "r2d2", "numeric", "chrono"]
+
+[dependencies.chrono]
+version = "0.4.11"
+features = ["serde"]
