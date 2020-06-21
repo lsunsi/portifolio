@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate diesel;
 
+mod models;
 mod schema;
 
 use actix_web::web::Data;
