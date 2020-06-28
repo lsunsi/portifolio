@@ -15,6 +15,14 @@ table! {
 }
 
 table! {
+    etfs (id) {
+        id -> Int4,
+        kind -> Text,
+        ticker -> Text,
+    }
+}
+
+table! {
     treasuries (id) {
         id -> Int4,
         kind -> Text,
@@ -27,5 +35,6 @@ joinable!(asset_prices -> assets (asset_id));
 allow_tables_to_appear_in_same_query!(
     asset_prices,
     assets,
+    etfs,
     treasuries,
 );
