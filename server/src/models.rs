@@ -4,12 +4,14 @@ use chrono::NaiveDate;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
+#[allow(dead_code)]
 #[derive(Queryable)]
 struct Asset {
     id: i32,
     kind: String,
 }
 
+#[allow(dead_code)]
 #[derive(Queryable)]
 struct Treasury {
     id: i32,

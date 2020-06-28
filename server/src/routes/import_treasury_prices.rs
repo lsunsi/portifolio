@@ -86,7 +86,6 @@ fn write(conn: &PgConnection, lines: Vec<TreasuryPrice>) -> Result<(), &'static 
         .group_by(|tp| tp.maturity_date)
     {
         let prices = treasury_prices.map(|tp| (tp.date, tp.price)).collect();
-        println!("{}", maturity_date);
 
         if let Err(_) = register_treasury_prices(conn, maturity_date, prices) {
             return Err("writing failed");
