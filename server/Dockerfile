@@ -1,6 +1,6 @@
 FROM rust:1.44.0-slim-buster
 
-RUN apt-get update && apt-get install -y libpq-dev
+RUN apt-get update && apt-get install -y libpq-dev libssl-dev pkg-config
 RUN cargo install diesel_cli --no-default-features --features postgres
 
 COPY Cargo.toml Cargo.lock diesel.toml ./
