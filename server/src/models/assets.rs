@@ -12,16 +12,16 @@ struct Asset {
 
 #[allow(dead_code)]
 #[derive(Queryable)]
-struct Treasury {
-    id: i32,
+pub struct Treasury {
+    pub id: i32,
     kind: String,
     maturity_date: NaiveDate,
 }
 
 #[allow(dead_code)]
 #[derive(Queryable)]
-struct Etf {
-    id: i32,
+pub struct Etf {
+    pub id: i32,
     kind: String,
     ticker: String,
 }
