@@ -13,6 +13,7 @@ csv = "1.1.3"
 itertools = "0.9.0"
 scraper = "0.12.0"
 openssl = "0.10.30"
+futures = "0.3.5"
 
 [dependencies.actix-web]
 version = "2.0.0"

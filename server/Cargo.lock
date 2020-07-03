@@ -1377,6 +1377,7 @@ dependencies = [
  "chrono",
  "csv",
  "diesel",
+ "futures",
  "itertools",
  "openssl",
  "scraper",
