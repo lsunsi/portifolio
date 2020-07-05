@@ -11,7 +11,7 @@ struct Asset {
 }
 
 #[allow(dead_code)]
-#[derive(Queryable)]
+#[derive(Queryable, Clone)]
 pub struct Treasury {
     pub id: i32,
     kind: String,
@@ -19,7 +19,7 @@ pub struct Treasury {
 }
 
 #[allow(dead_code)]
-#[derive(Queryable)]
+#[derive(Queryable, Clone)]
 pub struct Etf {
     pub id: i32,
     kind: String,
@@ -44,6 +44,12 @@ struct NewTreasury {
 struct NewEtf {
     id: i32,
     ticker: String,
+}
+
+#[derive(Clone)]
+pub enum Assetable {
+    Treasury(Treasury),
+    Etf(Etf),
 }
 
 pub fn register_treasury_asset(conn: &PgConnection, maturity_date: NaiveDate) -> QueryResult<i32> {
@@ -92,4 +98,38 @@ pub fn register_etf_asset(conn: &PgConnection, ticker: String) -> QueryResult<i3
         .get_result::<Etf>(conn)?;
 
     Ok(etf.id)
+}
+
+pub fn retrieve_assetables(conn: &PgConnection, asset_ids: &[i32]) -> QueryResult<Vec<Assetable>> {
+    let etfs = etfs::table
+        .filter(etfs::id.eq_any(asset_ids))
+        .load::<Etf>(conn)?;
+
+    let treasuries = treasuries::table
+        .filter(treasuries::id.eq_any(asset_ids))
+        .load::<Treasury>(conn)?;
+
+    Ok(asset_ids
+        .iter()
+        .map(|asset_id| {
+            etfs.iter()
+                .find_map(|etf| {
+                    if etf.id == *asset_id {
+                        Some(Assetable::Etf(etf.clone()))
+                    } else {
+                        None
+                    }
+                })
+                .or_else(|| {
+                    treasuries.iter().find_map(|treasury| {
+                        if treasury.id == *asset_id {
+                            Some(Assetable::Treasury(treasury.clone()))
+                        } else {
+                            None
+                        }
+                    })
+                })
+                .unwrap()
+        })
+        .collect())
 }
