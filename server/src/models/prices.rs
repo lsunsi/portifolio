@@ -1,6 +1,6 @@
 use crate::models::assets::{register_etf_asset, register_treasury_asset};
 use crate::schema::asset_prices;
-use bigdecimal::BigDecimal;
+use bigdecimal::{BigDecimal, Zero};
 use chrono::NaiveDate;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
@@ -58,4 +58,34 @@ pub fn register_etf_prices(
         replace_asset_prices(conn, asset_id, prices)?;
         Ok(())
     })
+}
+
+pub fn latest_prices(
+    conn: &PgConnection,
+    asset_ids: &[i32],
+    until_date: NaiveDate,
+) -> QueryResult<Vec<BigDecimal>> {
+    let prices = asset_prices::table
+        .select((asset_prices::asset_id, asset_prices::price))
+        .distinct_on(asset_prices::asset_id)
+        .filter(asset_prices::date.le(until_date))
+        .filter(asset_prices::asset_id.eq_any(asset_ids))
+        .order((asset_prices::asset_id, asset_prices::date.desc()))
+        .load::<(i32, BigDecimal)>(conn)?;
+
+    Ok(asset_ids
+        .iter()
+        .map(|asset_id| {
+            prices
+                .iter()
+                .find_map(|(aid, price)| {
+                    if aid == asset_id {
+                        Some(price.clone())
+                    } else {
+                        None
+                    }
+                })
+                .unwrap_or(BigDecimal::zero())
+        })
+        .collect())
 }
