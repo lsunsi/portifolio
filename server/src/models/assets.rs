@@ -15,7 +15,7 @@ struct Asset {
 pub struct Treasury {
     pub id: i32,
     kind: String,
-    maturity_date: NaiveDate,
+    pub maturity_date: NaiveDate,
 }
 
 #[allow(dead_code)]
@@ -23,7 +23,7 @@ pub struct Treasury {
 pub struct Etf {
     pub id: i32,
     kind: String,
-    ticker: String,
+    pub ticker: String,
 }
 
 #[derive(Insertable)]
