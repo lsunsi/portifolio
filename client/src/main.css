@@ -8,3 +8,7 @@
 [data-elm-hot="true"] {
   height: inherit;
 }
+
+html, body {
+	height: 100%;
+}
