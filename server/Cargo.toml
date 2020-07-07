@@ -14,6 +14,7 @@ itertools = "0.9.0"
 scraper = "0.12.0"
 openssl = "0.10.30"
 futures = "0.3.5"
+actix-cors = "0.2.0"
 
 [dependencies.actix-web]
 version = "2.0.0"
