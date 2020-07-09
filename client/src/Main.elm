@@ -6,8 +6,8 @@ import Browser.Navigation exposing (Key, pushUrl)
 import File exposing (File)
 import File.Select as FileSelect
 import Format
-import Html exposing (Html, a, button, div, h1, img, span, table, tbody, td, text, th, thead, tr)
-import Html.Attributes exposing (class, classList, href)
+import Html exposing (..)
+import Html.Attributes exposing (attribute, class, classList, href, style, type_)
 import Html.Events exposing (onClick)
 import Http
 import Route exposing (Route)
@@ -128,10 +128,10 @@ update msg model =
                     ( model, Cmd.none )
 
 
-navbar : Page -> Html Msg
-navbar page =
+sidebar : Page -> List (Html Msg)
+sidebar page =
     let
-        navLinkOptions =
+        navOptions =
             [ ( "Posição", Route.Position )
             , ( "Importar", Route.Import )
             ]
@@ -143,116 +143,108 @@ navbar page =
 
                 Nothing ->
                     False
-
-        navLink ( label, route ) =
-            a
-                [ class "py-3"
-                , classList [ ( "font-semibold", isRoute route ) ]
-                , href (Route.toPath route)
-                ]
-                [ text label ]
     in
-    div [ class "border-r w-40 px-2" ]
-        [ a
-            [ class "text-3xl font-medium h-16 text-center items-center flex"
-            , href (Route.toPath Route.Home)
-            ]
-            [ span [ class "text-indigo-600" ] [ text "Porti" ]
-            , span [] [ text "folio" ]
-            ]
-        , div [ class "mt-6 flex flex-col font-light" ]
-            (List.map navLink navLinkOptions)
+    [ h1 [ class "uk-margin-left" ]
+        [ span [] [ text "Porti" ]
+        , span [ class "uk-text-primary" ] [ text "folio" ]
         ]
-
-
-header : Page -> Html Msg
-header page =
-    let
-        pageTitle =
-            case page of
-                Home ->
-                    Nothing
-
-                Position _ _ ->
-                    Just "Posição"
-
-                Import _ ->
-                    Just "Importar"
-
-                Unknown ->
-                    Nothing
-
-        titleHeader title =
-            [ div [ class "pl-4 text-2xl font-semibold border-l-2 border-indigo-600" ] [ text title ] ]
-    in
-    div
-        [ class "border-b h-16 flex items-center" ]
-        (pageTitle
-            |> Maybe.map titleHeader
-            |> Maybe.withDefault []
+    , ul [ class "uk-nav uk-nav-primary uk-align-right" ]
+        (List.map
+            (\( label, route ) ->
+                li [ classList [ ( "uk-active", isRoute route ) ] ]
+                    [ a [ href (Route.toPath route) ] [ text label ] ]
+            )
+            navOptions
         )
+    ]
 
 
-content : Page -> Html Msg
+contentTitle : String -> Html Msg
+contentTitle title =
+    h1 [ class "uk-heading-line" ] [ span [] [ text title ] ]
+
+
+importView : Maybe File -> List (Html Msg)
+importView maybeFile =
+    case maybeFile of
+        Just file ->
+            [ contentTitle "Importar"
+            , div [ class "uk-button-group" ]
+                [ button
+                    [ class "uk-button uk-button-primary", onClick (ImportFileSubmit file) ]
+                    [ text "Importar" ]
+                , button
+                    [ class "uk-button uk-button-default", onClick ImportFileInputClicked ]
+                    [ text "Re-selecionar" ]
+                ]
+            ]
+
+        Nothing ->
+            [ contentTitle "Importar"
+            , button
+                [ class "uk-button uk-button-primary", onClick ImportFileInputClicked ]
+                [ text "Selecionar" ]
+            ]
+
+
+positionView : HttpData Api.PortfolioPosition -> List (Html Msg)
+positionView httpPosition =
+    case httpPosition of
+        Api.Success { amount, assets } ->
+            [ contentTitle "Posição"
+            , div [ class "uk-card" ]
+                [ div [ class "uk-card-title" ] [ text "Total" ]
+                , div [ class "uk-card-body" ] [ text (Format.money amount) ]
+                ]
+            , div [ class "uk-card" ]
+                [ div [ class "uk-card-title" ] [ text "Por Ativo" ]
+                , table [ class "uk-card-body uk-table" ]
+                    (List.map
+                        (\asset ->
+                            tr []
+                                [ td []
+                                    [ text
+                                        (case asset.assetable of
+                                            Api.Treasury _ ->
+                                                "Tesouro SELIC"
+
+                                            Api.Etf ticker ->
+                                                "ETF " ++ ticker
+                                        )
+                                    ]
+                                , td [] [ text (Format.money asset.amount) ]
+                                ]
+                        )
+                        assets
+                    )
+                ]
+            ]
+
+        Api.Loading ->
+            [ contentTitle "Posição", div [ attribute "uk-pinner" "true" ] [] ]
+
+        _ ->
+            [ contentTitle "Posição", div [ attribute "uk-pinner" "true" ] [] ]
+
+
+content : Page -> List (Html Msg)
 content page =
     case page of
         Import maybeFile ->
-            case maybeFile of
-                Nothing ->
-                    div [ class "px-4 pt-8" ]
-                        [ button [ onClick ImportFileInputClicked ] [ text "Selecionar arquivo" ]
-                        ]
+            importView maybeFile
 
-                Just file ->
-                    div []
-                        [ div [] [ text (File.name file) ]
-                        , button [ onClick (ImportFileSubmit file) ] [ text "Importar" ]
-                        ]
-
-        Position _ (Api.Success { amount, assets }) ->
-            div [ class "px-4 pt-8" ]
-                [ table []
-                    ([ tr []
-                        [ td [ class "text-right text-3xl pb-6" ] [ text (Format.money amount) ]
-                        , td [ class "text font-light pb-6" ] [ text "Portfolio" ]
-                        ]
-                     ]
-                        ++ List.map
-                            (\asset ->
-                                tr []
-                                    [ td [ class "text-right text-xl py-1" ] [ text (Format.money asset.amount) ]
-                                    , td [ class "text-sm font-light py-1" ]
-                                        [ text
-                                            (case asset.assetable of
-                                                Api.Treasury _ ->
-                                                    "Tesouro SELIC"
-
-                                                Api.Etf ticker ->
-                                                    "ETF " ++ ticker
-                                            )
-                                        ]
-                                    ]
-                            )
-                            assets
-                    )
-                ]
+        Position _ position ->
+            positionView position
 
         _ ->
-            div [] []
+            []
 
 
 body : Model -> List (Html Msg)
 body model =
-    [ div [ class "font-sans h-full" ]
-        [ div [ class "flex h-full" ]
-            [ navbar model.page
-            , div [ class "w-full" ]
-                [ header model.page
-                , div [ class "h-full" ]
-                    [ content model.page
-                    ]
-                ]
-            ]
+    [ div [ class "uk-flex uk-height-1-1 uk-flex-right uk-padding" ]
+        [ div [ class "uk-flex-1" ] (content model.page)
+        , div [ class "uk-flex-none" ] (sidebar model.page)
         ]
     ]
 
