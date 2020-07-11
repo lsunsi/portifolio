@@ -41,9 +41,9 @@ struct NewTreasury {
 
 #[derive(Insertable)]
 #[table_name = "etfs"]
-struct NewEtf {
+struct NewEtf<'a> {
     id: i32,
-    ticker: String,
+    ticker: &'a str,
 }
 
 #[derive(Clone)]
@@ -76,7 +76,7 @@ pub fn register_treasury_asset(conn: &PgConnection, maturity_date: NaiveDate) ->
     Ok(treasury.id)
 }
 
-pub fn register_etf_asset(conn: &PgConnection, ticker: String) -> QueryResult<i32> {
+pub fn register_etf_asset(conn: &PgConnection, ticker: &str) -> QueryResult<i32> {
     let etf = etfs::table
         .filter(etfs::ticker.eq(&ticker))
         .first::<Etf>(conn)

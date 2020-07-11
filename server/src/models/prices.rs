@@ -50,7 +50,7 @@ pub fn register_treasury_prices(
 
 pub fn register_etf_prices(
     conn: &PgConnection,
-    ticker: String,
+    ticker: &str,
     prices: Vec<(NaiveDate, BigDecimal)>,
 ) -> QueryResult<()> {
     conn.transaction(|| {
