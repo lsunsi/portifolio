@@ -5,6 +5,7 @@ mod database;
 mod models;
 mod routes;
 mod schema;
+mod services;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
