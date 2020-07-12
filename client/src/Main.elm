@@ -10,6 +10,7 @@ import Html exposing (..)
 import Html.Attributes exposing (attribute, class, classList, href, style, type_)
 import Html.Events exposing (onClick)
 import Http
+import Ports
 import Route exposing (Route)
 import Url exposing (Url)
 import Url.Parser as UrlParser exposing ((</>))
@@ -45,14 +46,9 @@ type alias Model =
     }
 
 
-init : () -> Url -> Key -> ( Model, Cmd Msg )
-init () url key =
-    ( { key = key
-      , page = Home
-      , portfolioId = Nothing
-      }
-    , Cmd.none
-    )
+init : Maybe Int -> Url -> Key -> ( Model, Cmd Msg )
+init portfolioId url key =
+    loadRoute (Route.fromUrl url) { key = key, page = Home, portfolioId = portfolioId }
 
 
 type Msg
@@ -77,7 +73,7 @@ loadRoute route model =
                     ( { model | page = Position id Api.Loading }, Api.portfolioPosition id GotPortfolioPosition )
 
                 Nothing ->
-                    ( { model | page = Unknown }, Cmd.none )
+                    ( { model | page = Home }, pushUrl model.key (Route.toPath Route.Home) )
 
         Just Route.Import ->
             ( { model | page = Import Nothing }, Cmd.none )
@@ -113,7 +109,10 @@ update msg model =
             case result of
                 Ok id ->
                     ( { model | portfolioId = Just id }
-                    , pushUrl model.key (Route.toPath Route.Position)
+                    , Cmd.batch
+                        [ pushUrl model.key (Route.toPath Route.Position)
+                        , Ports.storePortfolioId (Just id)
+                        ]
                     )
 
                 Err _ ->
@@ -261,7 +260,7 @@ subs _ =
     Sub.none
 
 
-main : Program () Model Msg
+main : Program (Maybe Int) Model Msg
 main =
     Browser.application
         { view = view

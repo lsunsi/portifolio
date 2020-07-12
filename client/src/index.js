@@ -1,6 +1,14 @@
 import './main.css';
 import { Elm } from './Main.elm';
 
-Elm.Main.init({
-  node: document.getElementById('root')
+const {localStorage} = window;
+
+const localStoragePortfolioIdKey = 'portfolio-id';
+const portfolioId = localStorage.getItem(localStoragePortfolioIdKey);
+
+const app = Elm.Main.init({
+  node: document.getElementById('root'),
+  flags: portfolioId && parseInt(portfolioId)
 });
+
+app.ports.storePortfolioId.subscribe(id => localStorage.setItem(localStoragePortfolioIdKey, id));
