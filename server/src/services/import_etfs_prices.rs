@@ -115,11 +115,11 @@ fn write(
     conn: &PgConnection,
     ticker: &str,
     lines: Vec<(NaiveDate, BigDecimal)>,
-) -> Result<(), Error> {
+) -> Result<usize, Error> {
     register_etf_prices(conn, ticker, lines).map_err(Error::Writing)
 }
 
-pub async fn run(conn: &PgConnection) -> Vec<(&'static str, Result<(), Error>)> {
+pub async fn run(conn: &PgConnection) -> Vec<(&'static str, Result<usize, Error>)> {
     let tickers_params = [
         ("BOVA11", BOVA11_FORM_PARAMS),
         ("SMAL11", SMAL11_FORM_PARAMS),
