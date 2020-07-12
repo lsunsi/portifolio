@@ -13,7 +13,7 @@ pub async fn post(db: Data<Database>) -> HttpResponse {
             (
                 ticker,
                 match result {
-                    Ok(()) => Ok(()),
+                    Ok(new_prices_count) => Ok(new_prices_count),
                     Err(import_etfs_prices::Error::Network(_)) => Err("Network"),
                     Err(import_etfs_prices::Error::Status(_)) => Err("Status"),
                     Err(import_etfs_prices::Error::Payload(_)) => Err("Payload"),
