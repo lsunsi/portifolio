@@ -15,6 +15,7 @@ async fn main() -> std::io::Result<()> {
         actix_web::App::new()
             .wrap(
                 actix_cors::Cors::new()
+                    .supports_credentials()
                     .allowed_origin("http://localhost:3000")
                     .finish(),
             )

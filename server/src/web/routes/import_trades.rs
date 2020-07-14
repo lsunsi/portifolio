@@ -1,5 +1,6 @@
 use crate::database::Database;
 use crate::models::register_trades;
+use crate::web::cookies::portfolio_id_cookie;
 use actix_web::{web, HttpResponse, Result};
 use bigdecimal::BigDecimal;
 use bytes::{buf::ext::BufExt, Bytes};
@@ -98,6 +99,6 @@ pub async fn post(db: web::Data<Database>, mut data: web::Payload) -> HttpRespon
 
     match parse(source.into()).and_then(|trades| write(&conn, trades)) {
         Err(reason) => HttpResponse::InternalServerError().body(reason),
-        Ok(portfolio_id) => HttpResponse::Ok().json(portfolio_id),
+        Ok(id) => HttpResponse::Ok().cookie(portfolio_id_cookie(id)).finish(),
     }
 }

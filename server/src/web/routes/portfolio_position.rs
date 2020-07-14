@@ -1,5 +1,8 @@
-use crate::database::Database;
-use crate::models::{position, AssetPosition, Assetable, PortfolioPosition};
+use crate::{
+    database::Database,
+    models::{position, AssetPosition, Assetable, PortfolioPosition},
+    web::cookies::PortfolioId,
+};
 use actix_web::{web, HttpResponse};
 use bigdecimal::ToPrimitive;
 use chrono::{NaiveDate, Utc};
@@ -55,8 +58,8 @@ impl From<PortfolioPosition> for ResponsePortfolioPosition {
     }
 }
 
-#[actix_web::get("/portfolio-position/{id}")]
-pub async fn get(db: web::Data<Database>, portfolio_id: web::Path<(i32,)>) -> HttpResponse {
+#[actix_web::get("/portfolio-position")]
+pub async fn get(db: web::Data<Database>, portfolio_id: PortfolioId) -> HttpResponse {
     let conn = db.get().unwrap();
     let today = Utc::now().date().naive_utc();
 
