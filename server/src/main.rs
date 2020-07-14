@@ -3,9 +3,9 @@ extern crate diesel;
 
 mod database;
 mod models;
-mod routes;
 mod schema;
 mod services;
+mod web;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -19,7 +19,7 @@ async fn main() -> std::io::Result<()> {
                     .finish(),
             )
             .data(database.clone())
-            .configure(routes::config)
+            .configure(web::routes::config)
     })
     .bind("0.0.0.0:8000")?
     .run()
