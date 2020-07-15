@@ -43,45 +43,30 @@ const Import = () => {
 
   return (
     <Layout title="Importar">
-      <div className="uk-flex uk-flex-right">
-        <div className="uk-flex-1">
-          <h1 className="uk-heading-line">
-            <span>Importar</span>
-          </h1>
-
-          <div className="js-upload" data-uk-form-custom>
-            <input
-              onChange={(e) =>
-                e.target.files && dispatch(["select", e.target.files[0]])
-              }
-              accept="text/csv"
-              type="file"
-            />
-            <button
-              className="uk-button uk-button-default"
-              disabled={state[0] == "sent"}
-              type="button"
-            >
-              {state[0] == "waiting" ? "Selecionar" : "Reselecionar"}
-            </button>
-          </div>
-          <button
-            className="uk-button uk-button-primary"
-            onClick={() => dispatch(["send"])}
-            disabled={state[0] != "selected"}
-            type="button"
-          >
-            Enviar
-          </button>
-        </div>
-        <div className="uk-flex-none">
-          <h1 className="uk-margin-left">
-            <span>
-              Porti<span className="uk-text-primary">folio</span>
-            </span>
-          </h1>
-        </div>
+      <div className="js-upload" data-uk-form-custom>
+        <input
+          onChange={(e) =>
+            e.target.files && dispatch(["select", e.target.files[0]])
+          }
+          accept="text/csv"
+          type="file"
+        />
+        <button
+          className="uk-button uk-button-default"
+          disabled={state[0] == "sent"}
+          type="button"
+        >
+          {state[0] == "waiting" ? "Selecionar" : "Reselecionar"}
+        </button>
       </div>
+      <button
+        className="uk-button uk-button-primary"
+        onClick={() => dispatch(["send"])}
+        disabled={state[0] != "selected"}
+        type="button"
+      >
+        Enviar
+      </button>
     </Layout>
   );
 };
