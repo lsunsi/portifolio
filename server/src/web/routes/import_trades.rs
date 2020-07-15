@@ -67,7 +67,7 @@ fn parse(bytes: Bytes) -> Result<(Vec<EtfTrade>, Vec<TreasuryTrade>), &'static s
             }
             "ETF" => {
                 let ticker = match line.asset_prop.as_str() {
-                    "BOVA11" => line.asset_prop,
+                    "BOVA11" | "SMAL11" | "IVVB11" => line.asset_prop,
                     _ => return Err("some line's etf asset prop is bad"),
                 };
 
