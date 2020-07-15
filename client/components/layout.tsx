@@ -1,28 +1,29 @@
-import Head from "next/head";
+import Base from "./base";
 
-interface LayoutProps {
-  children: React.ReactNode;
+type LayoutProps = {
   title: string;
-}
+  children: React.ReactNode;
+};
 
 const Layout = ({ title, children }: LayoutProps) => (
-  <>
-    <Head>
-      <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, shrink-to-fit=no"
-      />
-      <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/uikit@3.5.4/dist/css/uikit.min.css"
-      />
-      <script src="https://cdn.jsdelivr.net/npm/uikit@3.5.4/dist/js/uikit-icons.min.js" />
-      <script src="https://cdn.jsdelivr.net/npm/uikit@3.5.4/dist/js/uikit.min.js" />
-      <title>Portifolio | {title}</title>
-    </Head>
+  <Base title={title}>
+    <div className="uk-flex uk-flex-right">
+      <div className="uk-flex-1">
+        <h1 className="uk-heading-line">
+          <span>{title}</span>
+        </h1>
+        {children}
+      </div>
 
-    <div className="uk-height-1-1 uk-padding">{children}</div>
-  </>
+      <div className="uk-flex-none">
+        <h1 className="uk-margin-left">
+          <span>
+            Porti<span className="uk-text-primary">folio</span>
+          </span>
+        </h1>
+      </div>
+    </div>
+  </Base>
 );
 
 export default Layout;
