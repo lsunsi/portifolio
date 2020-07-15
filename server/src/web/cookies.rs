@@ -37,6 +37,8 @@ impl FromRequest for PortfolioId {
     type Config = ();
 
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        ready(PortfolioId::try_from(req.headers()).map_err(|()| HttpResponse::Forbidden().finish()))
+        ready(
+            PortfolioId::try_from(req.headers()).map_err(|()| HttpResponse::BadRequest().finish()),
+        )
     }
 }
