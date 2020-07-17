@@ -4,6 +4,7 @@ mod import_trades;
 mod import_treasury_prices;
 mod portfolio_amounts;
 mod portfolio_position;
+mod transactions;
 
 use actix_web::web::ServiceConfig;
 
@@ -13,5 +14,6 @@ pub fn config(cfg: &mut ServiceConfig) {
         .service(import_etfs_prices::post)
         .service(import_treasury_prices::post)
         .service(portfolio_position::get)
-        .service(portfolio_amounts::get);
+        .service(portfolio_amounts::get)
+        .service(transactions::get);
 }
