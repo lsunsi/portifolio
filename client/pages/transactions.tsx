@@ -69,6 +69,7 @@ const Transactions = ({ transactions }: Props) => {
           <li className="uk-nav-header">Filtros</li>
           {yearFilters(transactions).map((year) => (
             <li
+              key={year}
               className={`${
                 state[0] == "filtered-year" && state[1] == year
                   ? "uk-active"
@@ -81,6 +82,7 @@ const Transactions = ({ transactions }: Props) => {
           <li className="uk-nav-divider uk-width-1-2"></li>
           {assetTypeFilters(transactions).map((type) => (
             <li
+              key={type}
               className={`${
                 state[0] == "filtered-type" && state[1] == type
                   ? "uk-active"
@@ -104,8 +106,8 @@ const Transactions = ({ transactions }: Props) => {
             </thead>
             <tbody>
               {filteredTransactions(transactions, state).map(
-                ({ price, quantity, amount, date, assetable }) => (
-                  <tr>
+                ({ price, quantity, amount, date, assetable }, index) => (
+                  <tr key={index}>
                     <td className="uk-text-right">
                       {formatAssetable(assetable)}
                     </td>
