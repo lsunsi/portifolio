@@ -1,4 +1,4 @@
-use crate::schema::{assets, etfs, treasuries};
+use crate::schema::{assets, etfs, treasury_bonds};
 use chrono::NaiveDate;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
@@ -12,10 +12,11 @@ struct Asset {
 
 #[allow(dead_code)]
 #[derive(Queryable, Clone)]
-pub struct Treasury {
+pub struct TreasuryBond {
     pub id: i32,
     kind: String,
     pub maturity_date: NaiveDate,
+    pub key: String,
 }
 
 #[allow(dead_code)]
@@ -33,10 +34,11 @@ struct NewAsset {
 }
 
 #[derive(Insertable)]
-#[table_name = "treasuries"]
-struct NewTreasury {
+#[table_name = "treasury_bonds"]
+struct NewTreasuryBond {
     id: i32,
     maturity_date: NaiveDate,
+    key: String,
 }
 
 #[derive(Insertable)]
@@ -48,32 +50,38 @@ struct NewEtf<'a> {
 
 #[derive(Clone)]
 pub enum Assetable {
-    Treasury(Treasury),
+    TreasuryBond(TreasuryBond),
     Etf(Etf),
 }
 
-pub fn register_treasury_asset(conn: &PgConnection, maturity_date: NaiveDate) -> QueryResult<i32> {
-    let treasury = treasuries::table
-        .filter(treasuries::maturity_date.eq(maturity_date))
-        .first::<Treasury>(conn)
+pub fn register_treasury_bond_asset(
+    conn: &PgConnection,
+    maturity_date: NaiveDate,
+) -> QueryResult<i32> {
+    let treasury_bond = treasury_bonds::table
+        .filter(treasury_bonds::maturity_date.eq(maturity_date))
+        .first::<TreasuryBond>(conn)
         .optional()?;
 
-    if let Some(treasury) = treasury {
-        return Ok(treasury.id);
+    if let Some(treasury_bond) = treasury_bond {
+        return Ok(treasury_bond.id);
     }
 
     let asset = diesel::insert_into(assets::table)
-        .values(&NewAsset { kind: "treasury" })
+        .values(&NewAsset {
+            kind: "treasury_bond",
+        })
         .get_result::<Asset>(conn)?;
 
-    let treasury = diesel::insert_into(treasuries::table)
-        .values(&NewTreasury {
+    let treasury_bond = diesel::insert_into(treasury_bonds::table)
+        .values(&NewTreasuryBond {
             id: asset.id,
+            key: "LFT".into(),
             maturity_date,
         })
-        .get_result::<Treasury>(conn)?;
+        .get_result::<TreasuryBond>(conn)?;
 
-    Ok(treasury.id)
+    Ok(treasury_bond.id)
 }
 
 pub fn register_etf_asset(conn: &PgConnection, ticker: &str) -> QueryResult<i32> {
@@ -105,9 +113,9 @@ pub fn retrieve_assetables(conn: &PgConnection, asset_ids: &[i32]) -> QueryResul
         .filter(etfs::id.eq_any(asset_ids))
         .load::<Etf>(conn)?;
 
-    let treasuries = treasuries::table
-        .filter(treasuries::id.eq_any(asset_ids))
-        .load::<Treasury>(conn)?;
+    let treasury_bonds = treasury_bonds::table
+        .filter(treasury_bonds::id.eq_any(asset_ids))
+        .load::<TreasuryBond>(conn)?;
 
     Ok(asset_ids
         .iter()
@@ -121,9 +129,9 @@ pub fn retrieve_assetables(conn: &PgConnection, asset_ids: &[i32]) -> QueryResul
                     }
                 })
                 .or_else(|| {
-                    treasuries.iter().find_map(|treasury| {
-                        if treasury.id == *asset_id {
-                            Some(Assetable::Treasury(treasury.clone()))
+                    treasury_bonds.iter().find_map(|treasury_bond| {
+                        if treasury_bond.id == *asset_id {
+                            Some(Assetable::TreasuryBond(treasury_bond.clone()))
                         } else {
                             None
                         }

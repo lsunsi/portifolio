@@ -1,5 +1,5 @@
-use crate::models::assets::{Etf, Treasury};
-use crate::schema::{etfs, portfolios, trades, treasuries};
+use crate::models::assets::{Etf, TreasuryBond};
+use crate::schema::{etfs, portfolios, trades, treasury_bonds};
 use bigdecimal::BigDecimal;
 use chrono::NaiveDate;
 use diesel::pg::PgConnection;
@@ -36,7 +36,7 @@ struct NewTrade<'a> {
 pub fn register_trades(
     conn: &PgConnection,
     etf_trades: Vec<(String, NaiveDate, BigDecimal, BigDecimal)>,
-    treasury_trades: Vec<(NaiveDate, NaiveDate, BigDecimal, BigDecimal)>,
+    treasury_bond_trades: Vec<(NaiveDate, NaiveDate, BigDecimal, BigDecimal)>,
 ) -> QueryResult<i32> {
     conn.transaction(|| {
         let portfolio = diesel::insert_into(portfolios::table)
@@ -65,19 +65,19 @@ pub fn register_trades(
             }
         }
 
-        for (maturity_date, trades) in &treasury_trades
+        for (maturity_date, trades) in &treasury_bond_trades
             .iter()
             .sorted_by_key(|et| &et.0)
             .group_by(|et| &et.0)
         {
-            let treasury = treasuries::table
-                .filter(treasuries::maturity_date.eq(maturity_date))
-                .first::<Treasury>(conn)?;
+            let treasury_bond = treasury_bonds::table
+                .filter(treasury_bonds::maturity_date.eq(maturity_date))
+                .first::<TreasuryBond>(conn)?;
 
             for (_, date, price, quantity) in trades {
                 new_trades.push(NewTrade {
                     portfolio_id: portfolio.id,
-                    asset_id: treasury.id,
+                    asset_id: treasury_bond.id,
                     quantity,
                     price,
                     date,

@@ -40,10 +40,11 @@ table! {
 }
 
 table! {
-    treasuries (id) {
+    treasury_bonds (id) {
         id -> Int4,
         kind -> Text,
         maturity_date -> Date,
+        key -> Text,
     }
 }
 
@@ -57,5 +58,5 @@ allow_tables_to_appear_in_same_query!(
     etfs,
     portfolios,
     trades,
-    treasuries,
+    treasury_bonds,
 );
