@@ -30,7 +30,7 @@ const formatAssetable = (assetable: Assetable): string => {
   switch (assetable.type) {
     case "Etf":
       return `ETF ${assetable.data}`;
-    case "Treasury":
+    case "TreasuryBond":
       return `LFT ${assetable.data}`;
   }
 };

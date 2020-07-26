@@ -25,9 +25,9 @@ const Position = ({ portfolioPortfolio }: PositionProps) => {
                 {portfolioPortfolio.assets.map((asset, index) => (
                   <tr key={index}>
                     <td>
-                      {asset.assetable[0] === "treasury"
+                      {asset.assetable.type === "TreasuryBond"
                         ? "Tesouro SELIC"
-                        : `ETF ${asset.assetable[1]}`}
+                        : `ETF ${asset.assetable.data}`}
                     </td>
                     <td>{asset.amount}</td>
                   </tr>

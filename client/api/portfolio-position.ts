@@ -1,7 +1,12 @@
 import fetch from "isomorphic-unfetch";
 import * as dec from "decoders";
 
-type Assetable = ["treasury", string] | ["etff", string];
+type Assetable =
+  | { type: "Etf"; data: string }
+  | {
+      type: "TreasuryBond";
+      data: string;
+    };
 
 interface AssetPosition {
   assetable: Assetable;
@@ -15,21 +20,10 @@ export interface PortfolioPosition {
   amount: number;
 }
 
-const assetableDecoder: dec.Decoder<Assetable> = dec.map(
-  dec.object({
-    t: dec.string,
-    c: dec.string,
-  }),
-  ({ t, c }) => {
-    if (t === "Treasury") {
-      return ["treasury", c];
-    } else if (t === "Etf") {
-      return ["etff", c];
-    } else {
-      throw ":')";
-    }
-  }
-);
+const assetableDecoder: dec.Decoder<Assetable> = dec.object({
+  type: dec.oneOf<"TreasuryBond" | "Etf">(["TreasuryBond", "Etf"]),
+  data: dec.string,
+});
 
 const assetPositionDecoder: dec.Decoder<AssetPosition> = dec.object({
   assetable: assetableDecoder,

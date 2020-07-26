@@ -2,7 +2,7 @@ import fetch from "isomorphic-unfetch";
 import * as dec from "decoders";
 
 export type Assetable =
-  | { type: "Treasury"; data: string }
+  | { type: "TreasuryBond"; data: string }
   | { type: "Etf"; data: string };
 
 export interface Transaction {
@@ -19,7 +19,7 @@ const dateDecoder: dec.Decoder<number> = dec.compose(
 );
 
 const assetableDecoder: dec.Decoder<Assetable> = dec.object({
-  type: dec.oneOf<"Treasury" | "Etf">(["Treasury", "Etf"]),
+  type: dec.oneOf<"TreasuryBond" | "Etf">(["TreasuryBond", "Etf"]),
   data: dec.string,
 });
 

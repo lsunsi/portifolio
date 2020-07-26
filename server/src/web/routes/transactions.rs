@@ -12,7 +12,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 #[serde(tag = "type", content = "data")]
 enum ResponseAssetable {
-    Treasury(NaiveDate),
+    TreasuryBond(NaiveDate),
     Etf(String),
 }
 
@@ -28,7 +28,7 @@ struct ResponseTransaction {
 impl From<Assetable> for ResponseAssetable {
     fn from(a: Assetable) -> ResponseAssetable {
         match a {
-            Assetable::Treasury(t) => ResponseAssetable::Treasury(t.maturity_date),
+            Assetable::TreasuryBond(t) => ResponseAssetable::TreasuryBond(t.maturity_date),
             Assetable::Etf(etf) => ResponseAssetable::Etf(etf.ticker),
         }
     }

@@ -1,4 +1,4 @@
-use crate::models::assets::{register_etf_asset, register_treasury_asset};
+use crate::models::assets::{register_etf_asset, register_treasury_bond_asset};
 use crate::schema::asset_prices;
 use bigdecimal::{BigDecimal, Zero};
 use chrono::NaiveDate;
@@ -47,13 +47,13 @@ fn replace_asset_prices(
     Ok(new_prices_count as usize)
 }
 
-pub fn register_treasury_prices(
+pub fn register_treasury_bond_prices(
     conn: &PgConnection,
     maturity_date: NaiveDate,
     prices: Vec<(NaiveDate, BigDecimal)>,
 ) -> QueryResult<usize> {
     conn.transaction(|| {
-        let asset_id = register_treasury_asset(conn, maturity_date)?;
+        let asset_id = register_treasury_bond_asset(conn, maturity_date)?;
         replace_asset_prices(conn, asset_id, prices)
     })
 }

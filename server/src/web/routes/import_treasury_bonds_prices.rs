@@ -1,5 +1,5 @@
 use crate::database::Database;
-use crate::models::register_treasury_prices;
+use crate::models::register_treasury_bond_prices;
 use actix_web::{client::Client, web::Data, HttpResponse};
 use bigdecimal::BigDecimal;
 use bytes::{buf::ext::BufExt, Bytes};
@@ -87,7 +87,7 @@ fn write(conn: &PgConnection, lines: Vec<TreasuryPrice>) -> Result<(), &'static 
     {
         let prices = treasury_prices.map(|tp| (tp.date, tp.price)).collect();
 
-        if let Err(_) = register_treasury_prices(conn, maturity_date, prices) {
+        if let Err(_) = register_treasury_bond_prices(conn, maturity_date, prices) {
             return Err("writing failed");
         };
     }
@@ -95,7 +95,7 @@ fn write(conn: &PgConnection, lines: Vec<TreasuryPrice>) -> Result<(), &'static 
     Ok(())
 }
 
-#[actix_web::post("/import-treasury-prices")]
+#[actix_web::post("/import-treasury-bonds-prices")]
 pub async fn post(db: Data<Database>) -> HttpResponse {
     let conn = db.get().unwrap();
 
