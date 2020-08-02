@@ -26,7 +26,7 @@ pub fn position(
 ) -> QueryResult<PortfolioPosition> {
     let trades = trades::table
         .select((trades::asset_id, trades::quantity))
-        .filter(trades::portfolio_id.lt(portfolio_id))
+        .filter(trades::portfolio_id.eq(portfolio_id))
         .filter(trades::date.le(date))
         .order(trades::asset_id)
         .load::<(i32, BigDecimal)>(conn)?;
