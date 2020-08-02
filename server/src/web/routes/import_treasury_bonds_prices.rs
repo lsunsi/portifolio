@@ -21,7 +21,9 @@ pub async fn post(db: Data<Database>) -> HttpResponse {
                         .filter(|new_prices| *new_prices > &0)
                         .is_some()
                 })
-                .map(|(date, result)| (date, result.map_err(|_| "Error")))
+                .map(|((key, maturity), result)| {
+                    format!("{}({}) : {:?}", key, maturity, result.map_err(|_| "Error"))
+                })
                 .collect();
 
             HttpResponse::Ok().json(bs)

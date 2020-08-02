@@ -38,7 +38,7 @@ struct NewAsset {
 struct NewTreasuryBond {
     id: i32,
     maturity_date: NaiveDate,
-    key: String,
+    key: &'static str,
 }
 
 #[derive(Insertable)]
@@ -56,6 +56,7 @@ pub enum Assetable {
 
 pub fn register_treasury_bond_asset(
     conn: &PgConnection,
+    key: &'static str,
     maturity_date: NaiveDate,
 ) -> QueryResult<i32> {
     let treasury_bond = treasury_bonds::table
@@ -76,8 +77,8 @@ pub fn register_treasury_bond_asset(
     let treasury_bond = diesel::insert_into(treasury_bonds::table)
         .values(&NewTreasuryBond {
             id: asset.id,
-            key: "LFT".into(),
             maturity_date,
+            key,
         })
         .get_result::<TreasuryBond>(conn)?;
 

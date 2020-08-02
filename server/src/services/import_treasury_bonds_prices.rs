@@ -33,6 +33,7 @@ struct Line {
 }
 
 struct ParsedLine {
+    key: &'static str,
     maturity: NaiveDate,
     date: NaiveDate,
     price: BigDecimal,
@@ -65,9 +66,24 @@ fn parse(bytes: Bytes) -> Result<Vec<ParsedLine>, ReadingError> {
         let line: Line =
             line.map_err(|e| ReadingError::Parsing(format!("Some line is bad: {}", e)))?;
 
-        if line.kind != "Tesouro Selic" || line.price == "" {
+        if line.price == "" || line.price == "0,00" {
             continue;
         }
+
+        let key = match &line.kind[..] {
+            "Tesouro Selic" => "LFT",
+            "Tesouro IPCA+" => "NTN-B",
+            "Tesouro IPCA+ com Juros Semestrais" => "NTN-B Principal",
+            "Tesouro Prefixado" => "LTN",
+            "Tesouro Prefixado com Juros Semestrais" => "NTN-F",
+            "Tesouro IGPM+ com Juros Semestrais" => "NTN-C",
+            other_key => {
+                return Err(ReadingError::Parsing(format!(
+                    "Some line type is bad: {}",
+                    other_key
+                )))
+            }
+        };
 
         let price = BigDecimal::from_str(&line.price.replace(",", "."))
             .map_err(|e| ReadingError::Parsing(format!("Some line price is bad: {}", e)))?;
@@ -79,6 +95,7 @@ fn parse(bytes: Bytes) -> Result<Vec<ParsedLine>, ReadingError> {
             .map_err(|e| ReadingError::Parsing(format!("Some line maturity is bad: {}", e)))?;
 
         treasury_prices.push(ParsedLine {
+            key,
             maturity,
             price,
             date,
@@ -91,24 +108,24 @@ fn parse(bytes: Bytes) -> Result<Vec<ParsedLine>, ReadingError> {
 fn write(
     conn: &PgConnection,
     lines: Vec<ParsedLine>,
-) -> Vec<(NaiveDate, Result<usize, WritingError>)> {
+) -> Vec<((&'static str, NaiveDate), Result<usize, WritingError>)> {
     lines
         .into_iter()
-        .sorted_by_key(|tp| tp.maturity)
-        .group_by(|tp| tp.maturity)
+        .sorted_by_key(|tp| (tp.key, tp.maturity))
+        .group_by(|tp| (tp.key, tp.maturity))
         .into_iter()
-        .map(|(maturity, treasury_prices)| {
+        .map(|((key, maturity), treasury_prices)| {
             let prices = treasury_prices.map(|tp| (tp.date, tp.price)).collect();
-            let res = register_treasury_bond_prices(conn, maturity, prices)
+            let res = register_treasury_bond_prices(conn, key, maturity, prices)
                 .map_err(WritingError::Writing);
-            (maturity, res)
+            ((key, maturity), res)
         })
         .collect()
 }
 
 pub async fn run(
     conn: &PgConnection,
-) -> Result<Vec<(NaiveDate, Result<usize, WritingError>)>, ReadingError> {
+) -> Result<Vec<((&'static str, NaiveDate), Result<usize, WritingError>)>, ReadingError> {
     fetch()
         .await
         .and_then(|bytes| parse(bytes))
