@@ -49,11 +49,12 @@ fn replace_asset_prices(
 
 pub fn register_treasury_bond_prices(
     conn: &PgConnection,
+    key: &'static str,
     maturity_date: NaiveDate,
     prices: Vec<(NaiveDate, BigDecimal)>,
 ) -> QueryResult<usize> {
     conn.transaction(|| {
-        let asset_id = register_treasury_bond_asset(conn, maturity_date)?;
+        let asset_id = register_treasury_bond_asset(conn, key, maturity_date)?;
         replace_asset_prices(conn, asset_id, prices)
     })
 }
