@@ -14,13 +14,7 @@ pub async fn post(db: Data<Database>) -> HttpResponse {
         Ok(results) => {
             let bs: Vec<_> = results
                 .into_iter()
-                .filter(|(_, result)| {
-                    result
-                        .as_ref()
-                        .ok()
-                        .filter(|new_prices| *new_prices > &0)
-                        .is_some()
-                })
+                .filter(|(_, result)| result.is_err() || result.as_ref().ok().unwrap() > &0)
                 .map(|((key, maturity), result)| {
                     format!("{}({}) : {:?}", key, maturity, result.map_err(|_| "Error"))
                 })
