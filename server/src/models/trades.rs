@@ -72,6 +72,7 @@ pub fn register_trades(
         {
             let treasury_bond = treasury_bonds::table
                 .filter(treasury_bonds::maturity_date.eq(maturity_date))
+                .filter(treasury_bonds::key.eq("LFT"))
                 .first::<TreasuryBond>(conn)?;
 
             for (_, date, price, quantity) in trades {
