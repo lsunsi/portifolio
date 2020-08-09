@@ -33,10 +33,25 @@ struct NewTrade<'a> {
     price: &'a BigDecimal,
 }
 
+pub struct EtfTrade {
+    pub ticker: String,
+    pub date: NaiveDate,
+    pub price: BigDecimal,
+    pub quantity: BigDecimal,
+}
+
+pub struct TreasuryBondTrade {
+    pub key: String,
+    pub maturity: NaiveDate,
+    pub date: NaiveDate,
+    pub price: BigDecimal,
+    pub quantity: BigDecimal,
+}
+
 pub fn register_trades(
     conn: &PgConnection,
-    etf_trades: Vec<(String, NaiveDate, BigDecimal, BigDecimal)>,
-    treasury_bond_trades: Vec<(NaiveDate, NaiveDate, BigDecimal, BigDecimal)>,
+    etf_trades: &[EtfTrade],
+    treasury_bond_trades: &[TreasuryBondTrade],
 ) -> QueryResult<i32> {
     conn.transaction(|| {
         let portfolio = diesel::insert_into(portfolios::table)
@@ -47,41 +62,41 @@ pub fn register_trades(
 
         for (ticker, trades) in &etf_trades
             .iter()
-            .sorted_by_key(|et| &et.0)
-            .group_by(|et| &et.0)
+            .sorted_by_key(|t| &t.ticker)
+            .group_by(|t| &t.ticker)
         {
             let etf = etfs::table
                 .filter(etfs::ticker.eq(ticker))
                 .first::<Etf>(conn)?;
 
-            for (_, date, price, quantity) in trades {
+            for trade in trades {
                 new_trades.push(NewTrade {
                     portfolio_id: portfolio.id,
                     asset_id: etf.id,
-                    quantity,
-                    price,
-                    date,
+                    quantity: &trade.quantity,
+                    price: &trade.price,
+                    date: &trade.date,
                 });
             }
         }
 
-        for (maturity_date, trades) in &treasury_bond_trades
+        for ((key, maturity_date), trades) in &treasury_bond_trades
             .iter()
-            .sorted_by_key(|et| &et.0)
-            .group_by(|et| &et.0)
+            .sorted_by_key(|t| (&t.key, t.maturity))
+            .group_by(|t| (&t.key, t.maturity))
         {
             let treasury_bond = treasury_bonds::table
                 .filter(treasury_bonds::maturity_date.eq(maturity_date))
-                .filter(treasury_bonds::key.eq("LFT"))
+                .filter(treasury_bonds::key.eq(key))
                 .first::<TreasuryBond>(conn)?;
 
-            for (_, date, price, quantity) in trades {
+            for trade in trades {
                 new_trades.push(NewTrade {
                     portfolio_id: portfolio.id,
                     asset_id: treasury_bond.id,
-                    quantity,
-                    price,
-                    date,
+                    quantity: &trade.quantity,
+                    price: &trade.price,
+                    date: &trade.date,
                 });
             }
         }
