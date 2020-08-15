@@ -1,5 +1,5 @@
 target/
 .next/
 node_modules/
-
+.env.local
 *.code-workspace

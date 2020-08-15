@@ -19,7 +19,7 @@ const portfolioAmountDecoder = dec.map(
 const decode = dec.guard(dec.array(portfolioAmountDecoder));
 
 const portfolioAmounts = (cookie: string): Promise<PortfolioAmount[]> =>
-  fetch("http://localhost:8000/portfolio-amounts", {
+  fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/portfolio-amounts`, {
     headers: { cookie },
   })
     .then((resp) => resp.json())
