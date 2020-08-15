@@ -40,7 +40,9 @@ const portfolioPositionDecoder: dec.Decoder<PortfolioPosition> = dec.object({
 const decode = dec.guard(portfolioPositionDecoder);
 
 const getPortfolioPosition = (cookie: string): Promise<PortfolioPosition> =>
-  fetch("http://localhost:8000/portfolio-position", { headers: { cookie } })
+  fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/portfolio-position`, {
+    headers: { cookie },
+  })
     .then((resp) => {
       if (resp.status == 200) {
         return resp.json();

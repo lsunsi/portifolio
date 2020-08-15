@@ -34,7 +34,9 @@ const transactionDecoder: dec.Decoder<Transaction> = dec.object({
 const decode = dec.guard(dec.array(transactionDecoder));
 
 const getTransactions = (cookie: string): Promise<Transaction[]> =>
-  fetch("http://localhost:8000/transactions", { headers: { cookie } })
+  fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/transactions`, {
+    headers: { cookie },
+  })
     .then((resp) => {
       if (resp.status == 200) {
         return resp.json();
