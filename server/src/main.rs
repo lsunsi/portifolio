@@ -19,8 +19,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(
                 Cors::new()
+                    .allowed_origin("https://portifolio.lsunsi.com")
                     .supports_credentials()
-                    .allowed_origin("http://localhost:3000")
                     .finish(),
             )
             .wrap(Logger::default())
