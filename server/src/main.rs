@@ -17,12 +17,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .wrap(
-                Cors::new()
-                    .allowed_origin("https://portifolio.lsunsi.com")
-                    .supports_credentials()
-                    .finish(),
-            )
+            .wrap(Cors::new().supports_credentials().finish())
             .wrap(Logger::default())
             .data(database.clone())
             .configure(web::routes::config)
