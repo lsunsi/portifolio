@@ -1,5 +1,7 @@
 #[macro_use]
 extern crate diesel;
+#[macro_use]
+extern crate diesel_migrations;
 
 mod database;
 mod models;
@@ -10,10 +12,14 @@ mod web;
 use actix_cors::Cors;
 use actix_web::{middleware::Logger, App, HttpServer};
 
+embed_migrations!("./migrations");
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    let database = database::init();
     env_logger::init();
+
+    let database = database::init();
+    embedded_migrations::run_with_output(&database.get().unwrap(), &mut std::io::stdout()).unwrap();
 
     HttpServer::new(move || {
         App::new()
