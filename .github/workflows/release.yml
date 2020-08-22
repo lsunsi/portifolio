@@ -1,0 +1,48 @@
+name: release
+
+on:
+  push:
+    branches: [update-deploy-setup]
+
+jobs:
+  release-server:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo
+          key: cargo-${{ hashFiles('server/Cargo.lock') }}
+          restore-keys: cargo-
+      - name: Cache builds
+        uses: actions/cache@v2
+        with:
+          path: server/target
+          key: cargo-build-${{ hashFiles('server/Cargo.lock') }}
+          restore-keys: cargo-build-
+      - name: Build release binary
+        run: cargo build --target x86_64-unknown-linux-gnu --release --locked --target-dir target
+      - name: Compress release binary
+        run: gzip -v -c -9 -f ./target/x86_64-unknown-linux-gnu/release/portifolio-server > portifolio-server.gz
+      - name: Set tag name from date
+        run: echo "::set-env name=DATE_TAG::$(date +'%Y-%m-%d/%H')"
+      - name: Create GitHub release
+        id: create-release
+        uses: actions/create-release@v1
+        with:
+          release_name: Release ${{ env.DATE_TAG }}
+          tag_name: ${{ env.DATE_TAG }}
+          draft: true
+      - name: Upload GitHub release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_content_type: application/gzip
+          asset_path: ./server/portifolio-server.gz
+          asset_name: portifolio-server.gz
