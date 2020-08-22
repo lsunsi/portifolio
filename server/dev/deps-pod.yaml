@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: portifolio-deps
+spec:
+  containers:
+    - name: database
+      image: postgres:12.4-alpine
+      env:
+        - name: POSTGRES_USER
+          value: portifolio-dev
+        - name: POSTGRES_PASSWORD
+          value: portifolio-pass
+      ports:
+        - containerPort: 5432
+        - hostPort: 5432
