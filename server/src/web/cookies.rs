@@ -5,11 +5,12 @@ use std::convert::TryFrom;
 
 const PORTFOLIO_ID: &'static str = "portfolio-id";
 
-pub fn portfolio_id_cookie(id: i32) -> cookie::Cookie<'static> {
+pub fn portfolio_id_cookie(id: i32, domain: String) -> cookie::Cookie<'static> {
     let mut cookie = cookie::Cookie::new(PORTFOLIO_ID, id.to_string());
     cookie.set_same_site(cookie::SameSite::Strict);
-    cookie.set_domain("portifolio.lsunsi.com");
+    cookie.set_secure(domain != "localhost");
     cookie.set_http_only(true);
+    cookie.set_domain(domain);
     cookie.make_permanent();
     cookie
 }
