@@ -1,14 +1,18 @@
 use crate::database::Database;
+use crate::env::Env;
 use crate::services::import_trades::{run, Error};
 use crate::web::cookies::portfolio_id_cookie;
-use actix_web::{web, HttpResponse};
+use actix_web::{
+    web::{BytesMut, Data, Payload},
+    HttpResponse,
+};
 use futures::StreamExt;
 
 #[actix_web::post("/import-trades")]
-pub async fn post(db: web::Data<Database>, mut data: web::Payload) -> HttpResponse {
+pub async fn post(mut data: Payload, db: Data<Database>, env: Data<Env>) -> HttpResponse {
     let conn = db.get().unwrap();
 
-    let mut csv = web::BytesMut::new();
+    let mut csv = BytesMut::new();
     while let Some(item) = data.next().await {
         csv.extend_from_slice(&item.unwrap());
     }
@@ -17,7 +21,7 @@ pub async fn post(db: web::Data<Database>, mut data: web::Payload) -> HttpRespon
         Err(Error::Parsing(e)) => HttpResponse::BadRequest().body(format!("ParsingError: {}", e)),
         Err(Error::Writing(e)) => HttpResponse::BadRequest().body(format!("WritingError: {}", e)),
         Ok(id) => HttpResponse::Created()
-            .cookie(portfolio_id_cookie(id))
+            .cookie(portfolio_id_cookie(id, env.domain.clone()))
             .finish(),
     }
 }

@@ -4,8 +4,10 @@
 
 # Setup the dependencies pod to be used by the server
 
+HERE_PATH="$(dirname $(realpath $0))"
+DEPS_POD_YAML="$HERE_PATH/deps-pod.yaml"
+
 POD_STATUS=$(podman pod list | grep portifolio-deps)
-DEPS_POD_YAML="$(dirname $(realpath $0))/deps-pod.yaml"
 
 if echo $POD_STATUS | grep -q "Running"; then
     echo "deps-pod: running"
@@ -21,5 +23,4 @@ fi
 
 # Run the server with required environment variables
 
-DATABASE_URL="postgres://portifolio-dev:portifolio-pass@localhost/portifolio-dev"
-RUST_LOG=info DATABASE_URL=$DATABASE_URL cargo run
+(export $(cat "$HERE_PATH/.env") && cargo run)
