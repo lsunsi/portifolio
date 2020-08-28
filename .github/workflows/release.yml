@@ -14,6 +14,8 @@ jobs:
         working-directory: server
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Cache dependencies
         uses: actions/cache@v2
         with:
@@ -26,18 +28,23 @@ jobs:
           path: server/target
           key: cargo-build-${{ hashFiles('server/Cargo.lock') }}
           restore-keys: cargo-build-
+      - name: Install proper rust toolchain
+        run: rustup install 1.46.0
       - name: Build release binary
-        run: cargo build --target x86_64-unknown-linux-gnu --release --locked --target-dir target
+        run: cargo +1.46.0 build --target x86_64-unknown-linux-gnu --release --locked --target-dir target
       - name: Compress release binary
         run: gzip -v -c -9 -f ./target/x86_64-unknown-linux-gnu/release/portifolio-server > portifolio-server.gz
       - name: Set tag name from date
         run: echo "::set-env name=DATE_TAG::$(date +'%Y-%m-%d/%H')"
+      - name: Set body text from commit log
+        run: echo "::set-env name=BODY::$(git log $(git describe --tags --abbrev=0)..@ --oneline --decorate=no)"
       - name: Create GitHub release
         id: create-release
         uses: actions/create-release@v1
         with:
           release_name: ${{ env.DATE_TAG }}
           tag_name: ${{ env.DATE_TAG }}
+          body: ${{ env.BODY }}
           draft: true
       - name: Upload GitHub release
         uses: actions/upload-release-asset@v1
